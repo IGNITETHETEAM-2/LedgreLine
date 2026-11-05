@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f7fb" />
+    <meta
+      name="description"
+      content="A public shared ledger demo. Use fictional transaction data only."
+    />
+    <title>LedgerLine — Personal ledger</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./src/app.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="LedgerLine home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>LedgerLine</span>
+        </a>
+        <label class="currency-picker">
+          <span class="visually-hidden">Display currency</span>
+          <select id="currency" aria-label="Display currency">
+            <option value="INR">INR (₹)</option>
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+          </select>
+        </label>
+      </header>
+
+      <main>
+        <aside class="public-notice" aria-label="Public demo privacy notice">
+          <strong>Public shared demo:</strong>
+          anyone can view, add, edit, or delete entries. Use fictional data only; there is no
+          sign-in or private account.
+        </aside>
+        <section class="intro">
+          <div>
+            <p class="eyebrow">YOUR MONEY, IN ONE PLACE</p>
+            <h1>Personal ledger</h1>
+            <p class="intro-copy">A clear view of what comes in and what goes out.</p>
+          </div>
+          <button class="button button-primary" id="add-transaction" type="button">
+            <span aria-hidden="true">+</span> Add transaction
+          </button>
+        </section>
+
+        <div id="app-message" class="app-message" role="status" aria-live="polite" hidden>
+          <span id="app-message-text"></span>
+          <button class="text-button" id="retry-load" type="button" hidden>Retry connection</button>
+        </div>
+
+        <section class="summary-grid" aria-label="Ledger summary">
+          <article class="summary-card">
+            <p class="summary-label">Available balance</p>
+            <p class="summary-value" id="balance-total">—</p>
+            <p class="summary-hint">Income minus expenses</p>
+          </article>
+          <article class="summary-card">
+            <p class="summary-label">Total income</p>
+            <p class="summary-value positive" id="income-total">—</p>
+            <p class="summary-hint">Across all transactions</p>
+          </article>
+          <article class="summary-card">
+            <p class="summary-label">Total expenses</p>
+            <p class="summary-value negative" id="expense-total">—</p>
+            <p class="summary-hint">Across all transactions</p>
+          </article>
+        </section>
+
+        <section class="ledger-panel" aria-labelledby="transactions-heading">
+          <div class="panel-heading">
+            <div>
+              <h2 id="transactions-heading">Transactions</h2>
+              <p id="transaction-count" class="panel-subtitle">0 entries</p>
+            </div>
+            <div class="filters">
+              <label class="search-field">
+                <span class="visually-hidden">Search transactions</span>
+                <span aria-hidden="true" class="search-icon">⌕</span>
+                <input id="search" type="search" placeholder="Search transactions" />
+              </label>
+              <label>
+                <span class="visually-hidden">Filter by type</span>
+                <select id="type-filter">
+                  <option value="all">All types</option>
+                  <option value="income">Income</option>
+                  <option value="expense">Expenses</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Type</th>
+                  <th scope="col" class="amount-column">Amount</th>
+                  <th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="transaction-rows"></tbody>
+            </table>
+            <div id="empty-state" class="empty-state">
+              <span class="empty-icon" aria-hidden="true">↗</span>
+              <h3 id="empty-title">No transactions yet</h3>
+              <p id="empty-copy">Add your first entry to start keeping track.</p>
+              <button class="button button-secondary" id="empty-add" type="button">
+                Add your first transaction
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <span>LedgerLine</span>
+        <span>Entries are shared publicly and stored in the connected database.</span>
+      </footer>
+    </div>
+
+    <dialog id="transaction-dialog" aria-labelledby="dialog-title">
+      <form id="transaction-form" novalidate>
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">LEDGER ENTRY</p>
+            <h2 id="dialog-title">Add transaction</h2>
+          </div>
+          <button class="icon-button" id="close-dialog" type="button" aria-label="Close dialog">
+            ×
+          </button>
+        </div>
+        <div id="form-error" class="form-error" role="alert" hidden></div>
+        <label class="field">
+          <span>Description</span>
+          <input
+            id="description"
+            name="description"
+            type="text"
+            maxlength="80"
+            autocomplete="off"
+            placeholder="e.g. Monthly salary"
+            required
+          />
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span>Type</span>
+            <select id="transaction-type" name="type">
+              <option value="expense">Expense</option>
+              <option value="income">Income</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Category</span>
+            <select id="category" name="category"></select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field">
+            <span>Amount</span>
+            <input
+              id="amount"
+              name="amount"
+              type="number"
+              min="0.01"
+              max="999999999.99"
+              step="0.01"
+              inputmode="decimal"
+              placeholder="0.00"
+              required
+            />
+          </label>
+          <label class="field">
+            <span>Date</span>
+            <input id="date" name="date" type="date" required />
+          </label>
+        </div>
+        <label class="field">
+          <span>Note <span class="optional">(optional)</span></span>
+          <textarea
+            id="note"
+            name="note"
+            rows="2"
+            maxlength="280"
+            placeholder="Add a short note"
+          ></textarea>
+        </label>
+        <div class="dialog-actions">
+          <button class="button button-quiet" id="cancel-dialog" type="button">Cancel</button>
+          <button class="button button-primary" id="save-transaction" type="submit">
+            Save transaction
+          </button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
