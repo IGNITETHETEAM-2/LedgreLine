@@ -28,6 +28,78 @@ body {
     #f5f7fb;
 }
 
+.auth-screen[hidden],
+.page-shell[hidden] {
+  display: none;
+}
+
+.auth-screen {
+  display: grid;
+  min-height: 100vh;
+  align-content: center;
+  justify-items: center;
+  padding: 32px 20px;
+}
+
+.auth-brand {
+  margin-bottom: 24px;
+}
+
+.auth-card {
+  width: min(100%, 420px);
+  padding: 32px;
+  border: 1px solid rgb(231 234 242 / 88%);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.auth-card h1 {
+  margin-bottom: 8px;
+  font-size: 26px;
+}
+
+.auth-copy {
+  margin-bottom: 26px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 3px;
+}
+
+.auth-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.auth-switch .text-button {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.auth-privacy {
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: #929caf;
+  font-size: 11px;
+  text-align: center;
+}
+
+.auth-error {
+  margin-top: -6px;
+}
+
 button,
 input,
 select,
@@ -60,6 +132,21 @@ a:focus-visible {
   justify-content: space-between;
   min-height: 76px;
   border-bottom: 1px solid rgb(221 226 237 / 78%);
+}
+
+.account-tools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.account-email {
+  max-width: 240px;
+  overflow: hidden;
+  color: #78839a;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .brand {
@@ -106,21 +193,6 @@ main {
   justify-content: space-between;
   gap: 20px;
   margin-bottom: 29px;
-}
-
-.public-notice {
-  margin-bottom: 24px;
-  padding: 14px 16px;
-  border: 1px solid #f0d7a3;
-  border-radius: 10px;
-  background: #fff9eb;
-  color: #765820;
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.public-notice strong {
-  color: #654812;
 }
 
 .eyebrow {
@@ -643,6 +715,23 @@ dialog form {
     width: min(100% - 32px, 560px);
   }
 
+  .topbar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 0;
+  }
+
+  .account-tools {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 7px 10px;
+  }
+
+  .account-email {
+    display: none;
+  }
+
   main {
     padding-top: 32px;
   }
@@ -708,6 +797,10 @@ dialog form {
 }
 
 @media (max-width: 420px) {
+  .auth-card {
+    padding: 24px 20px;
+  }
+
   .page-shell {
     width: calc(100% - 24px);
   }

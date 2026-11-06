@@ -6,36 +6,83 @@
     <meta name="theme-color" content="#f5f7fb" />
     <meta
       name="description"
-      content="A public shared ledger demo. Use fictional transaction data only."
+      content="Sign in to your private LedgerLine personal ledger."
     />
     <title>LedgerLine — Personal ledger</title>
     <link rel="stylesheet" href="./styles.css" />
     <script type="module" src="./src/app.js"></script>
   </head>
   <body>
-    <div class="page-shell">
+    <section class="auth-screen" id="auth-screen" aria-labelledby="auth-title">
+      <a class="brand auth-brand" href="./" aria-label="LedgerLine">
+        <span class="brand-mark" aria-hidden="true">L</span>
+        <span>LedgerLine</span>
+      </a>
+      <div class="auth-card">
+        <p class="eyebrow">YOUR MONEY, IN ONE PLACE</p>
+        <h1 id="auth-title">Create your account</h1>
+        <p id="auth-copy" class="auth-copy">Sign up to start your private personal ledger.</p>
+        <div id="auth-error" class="form-error auth-error" role="alert" hidden></div>
+        <form id="auth-form" novalidate>
+          <label class="field">
+            <span>Email</span>
+            <input
+              id="auth-email"
+              name="email"
+              type="email"
+              maxlength="254"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required
+            />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input
+              id="auth-password"
+              name="password"
+              type="password"
+              minlength="8"
+              maxlength="128"
+              autocomplete="new-password"
+              placeholder="At least 8 characters"
+              required
+            />
+          </label>
+          <button class="button button-primary auth-submit" id="auth-submit" type="submit">
+            Create account
+          </button>
+        </form>
+        <p class="auth-switch">
+          <span id="auth-switch-copy">Already have an account?</span>
+          <button class="text-button" id="auth-mode-toggle" type="button">Log in</button>
+        </p>
+        <p class="auth-privacy">Your ledger is private to your account.</p>
+      </div>
+    </section>
+
+    <div class="page-shell" id="app-shell" hidden>
       <header class="topbar">
         <a class="brand" href="./" aria-label="LedgerLine home">
           <span class="brand-mark" aria-hidden="true">L</span>
           <span>LedgerLine</span>
         </a>
-        <label class="currency-picker">
-          <span class="visually-hidden">Display currency</span>
-          <select id="currency" aria-label="Display currency">
-            <option value="INR">INR (₹)</option>
-            <option value="USD">USD ($)</option>
-            <option value="EUR">EUR (€)</option>
-            <option value="GBP">GBP (£)</option>
-          </select>
-        </label>
+        <div class="account-tools">
+          <label class="currency-picker">
+            <span class="visually-hidden">Display currency</span>
+            <select id="currency" aria-label="Display currency">
+              <option value="INR">INR (₹)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+            </select>
+          </label>
+          <span class="account-email" id="account-email"></span>
+          <button class="text-button" id="sign-out" type="button">Sign out</button>
+        </div>
       </header>
 
       <main>
-        <aside class="public-notice" aria-label="Public demo privacy notice">
-          <strong>Public shared demo:</strong>
-          anyone can view, add, edit, or delete entries. Use fictional data only; there is no
-          sign-in or private account.
-        </aside>
         <section class="intro">
           <div>
             <p class="eyebrow">YOUR MONEY, IN ONE PLACE</p>
@@ -121,7 +168,7 @@
 
       <footer>
         <span>LedgerLine</span>
-        <span>Entries are shared publicly and stored in the connected database.</span>
+        <span>Your entries are private to your account.</span>
       </footer>
     </div>
 
