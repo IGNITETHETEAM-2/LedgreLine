@@ -100,7 +100,7 @@ test("filters and sorts without changing the source array", () => {
   );
 });
 
-test("validates shared database state and rejects duplicate transaction IDs", () => {
+test("validates private ledger state and rejects duplicate transaction IDs", () => {
   const state = {
     version: 1,
     currency: "USD",
