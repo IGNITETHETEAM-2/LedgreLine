@@ -12,9 +12,21 @@ import {
 
 const elements = {
   add: document.querySelector("#add-transaction"),
+  appShell: document.querySelector("#app-shell"),
   appMessage: document.querySelector("#app-message"),
   appMessageText: document.querySelector("#app-message-text"),
   amount: document.querySelector("#amount"),
+  authCopy: document.querySelector("#auth-copy"),
+  authEmail: document.querySelector("#auth-email"),
+  authError: document.querySelector("#auth-error"),
+  authForm: document.querySelector("#auth-form"),
+  authPassword: document.querySelector("#auth-password"),
+  authScreen: document.querySelector("#auth-screen"),
+  authSubmit: document.querySelector("#auth-submit"),
+  authSwitchCopy: document.querySelector("#auth-switch-copy"),
+  authTitle: document.querySelector("#auth-title"),
+  authToggle: document.querySelector("#auth-mode-toggle"),
+  accountEmail: document.querySelector("#account-email"),
   balance: document.querySelector("#balance-total"),
   category: document.querySelector("#category"),
   closeDialog: document.querySelector("#close-dialog"),
@@ -35,6 +47,7 @@ const elements = {
   retry: document.querySelector("#retry-load"),
   rows: document.querySelector("#transaction-rows"),
   search: document.querySelector("#search"),
+  signOut: document.querySelector("#sign-out"),
   transactionCount: document.querySelector("#transaction-count"),
   transactionType: document.querySelector("#transaction-type"),
   typeFilter: document.querySelector("#type-filter"),
@@ -43,11 +56,14 @@ const elements = {
 let state = { ...INITIAL_STATE, transactions: [] };
 let editingId = null;
 let storageReady = false;
+let authMode = "register";
 
 setControlsDisabled(true);
-showMessage("Connecting to the shared database...", "info", 0);
-void initialize();
+void checkSession();
 
+elements.authForm.addEventListener("submit", onAuthSubmit);
+elements.authToggle.addEventListener("click", toggleAuthMode);
+elements.signOut.addEventListener("click", () => void signOut());
 elements.add.addEventListener("click", () => openDialog());
 elements.emptyAdd.addEventListener("click", () => openDialog());
 elements.closeDialog.addEventListener("click", closeDialog);
@@ -59,9 +75,116 @@ elements.typeFilter.addEventListener("change", renderTransactions);
 elements.currency.addEventListener("change", onCurrencyChange);
 elements.retry.addEventListener("click", () => void initialize());
 
+async function checkSession() {
+  try {
+    const result = await requestJson("/api/session");
+    if (result.user) {
+      showApplication(result.user);
+      await initialize();
+    } else {
+      showAuthentication();
+    }
+  } catch (error) {
+    showAuthentication();
+    showAuthError(`Could not check your sign-in: ${error.message}`);
+  }
+}
+
+async function onAuthSubmit(event) {
+  event.preventDefault();
+  elements.authError.hidden = true;
+  const email = elements.authEmail.value.trim();
+  const password = elements.authPassword.value;
+  if (!email || !password) {
+    showAuthError("Enter your email and password.");
+    return;
+  }
+
+  setAuthBusy(true);
+  try {
+    const action = authMode === "register" ? "register" : "login";
+    const result = await requestJson(`/api/${action}`, {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+    elements.authPassword.value = "";
+    showApplication(result.user);
+    await initialize();
+  } catch (error) {
+    showAuthError(error.message);
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+function toggleAuthMode() {
+  authMode = authMode === "register" ? "login" : "register";
+  const registering = authMode === "register";
+  elements.authTitle.textContent = registering ? "Create your account" : "Welcome back";
+  elements.authCopy.textContent = registering
+    ? "Sign up to start your private personal ledger."
+    : "Log in to continue to your personal ledger.";
+  elements.authSubmit.textContent = registering ? "Create account" : "Log in";
+  elements.authSwitchCopy.textContent = registering
+    ? "Already have an account?"
+    : "New to LedgerLine?";
+  elements.authToggle.textContent = registering ? "Log in" : "Sign up";
+  elements.authPassword.autocomplete = registering ? "new-password" : "current-password";
+  elements.authPassword.placeholder = registering
+    ? "At least 8 characters"
+    : "Enter your password";
+  elements.authError.hidden = true;
+}
+
+function setAuthBusy(busy) {
+  elements.authSubmit.disabled = busy;
+  elements.authToggle.disabled = busy;
+  elements.authEmail.disabled = busy;
+  elements.authPassword.disabled = busy;
+  elements.authSubmit.textContent = busy
+    ? "Please wait..."
+    : authMode === "register"
+      ? "Create account"
+      : "Log in";
+}
+
+function showAuthentication() {
+  elements.appShell.hidden = true;
+  elements.authScreen.hidden = false;
+  elements.authEmail.focus();
+}
+
+function showApplication(user) {
+  elements.authScreen.hidden = true;
+  elements.appShell.hidden = false;
+  elements.accountEmail.textContent = user.email;
+}
+
+function showAuthError(message) {
+  elements.authError.textContent = message;
+  elements.authError.hidden = false;
+}
+
+async function signOut() {
+  elements.signOut.disabled = true;
+  try {
+    await requestJson("/api/logout", { method: "POST" });
+    state = { ...INITIAL_STATE, transactions: [] };
+    storageReady = false;
+    elements.authForm.reset();
+    authMode = "login";
+    toggleAuthMode();
+    showAuthentication();
+  } catch (error) {
+    showMessage(`Could not sign out: ${error.message}`);
+  } finally {
+    elements.signOut.disabled = false;
+  }
+}
+
 async function initialize() {
   setControlsDisabled(true);
-  showMessage("Connecting to the shared database...", "info", 0);
+  showMessage("Connecting to your private ledger...", "info", 0);
 
   try {
     state = validateState(await requestJson("/api/state"));
@@ -74,9 +197,9 @@ async function initialize() {
   } catch (error) {
     storageReady = false;
     elements.emptyTitle.textContent = "Could not connect to the database";
-    elements.emptyCopy.textContent = "Retry the connection to load the shared ledger.";
+    elements.emptyCopy.textContent = "Retry the connection to load your ledger.";
     elements.emptyAdd.hidden = true;
-    showMessage(`Could not load the shared ledger: ${error.message}`, "error", 0, true);
+    showMessage(`Could not load your ledger: ${error.message}`, "error", 0, true);
   }
 }
 
@@ -245,7 +368,7 @@ function renderTransactions() {
     elements.emptyTitle.textContent = hasTransactions ? "No matching transactions" : "No transactions yet";
     elements.emptyCopy.textContent = hasTransactions
       ? "Try changing the search or type filter."
-      : "Add a fictional entry to try the shared demo ledger.";
+      : "Add your first entry to start keeping track.";
     elements.emptyAdd.hidden = hasTransactions || !storageReady;
   }
 }
@@ -306,7 +429,7 @@ function createActionButton(label, action, className = "text-button") {
 }
 
 async function deleteTransaction(transaction) {
-  if (!window.confirm(`Delete "${transaction.description}" for everyone? This cannot be undone.`)) {
+  if (!window.confirm(`Delete "${transaction.description}"? This cannot be undone.`)) {
     return;
   }
 

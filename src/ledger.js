@@ -138,7 +138,7 @@ export function validateState(state) {
     !CURRENCY_CODES.includes(state.currency) ||
     !Array.isArray(state.transactions)
   ) {
-    throw new Error("The shared ledger returned an unsupported data format.");
+    throw new Error("Your ledger returned an unsupported data format.");
   }
 
   const ids = new Set();
@@ -149,12 +149,12 @@ export function validateState(state) {
       transaction.id.length === 0 ||
       ids.has(transaction.id)
     ) {
-      throw new Error("The shared ledger contains an invalid transaction ID.");
+      throw new Error("Your ledger contains an invalid transaction ID.");
     }
 
     const result = validateTransaction(transaction);
     if (!result.ok) {
-      throw new Error("The shared ledger contains an invalid transaction.");
+      throw new Error("Your ledger contains an invalid transaction.");
     }
 
     ids.add(transaction.id);
